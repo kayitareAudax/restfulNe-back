@@ -6,10 +6,10 @@ router.use(protect)
 router.route("/").post(
     check('firstName').notEmpty().withMessage('First name is required'),
     check('lastName').notEmpty().withMessage('Last name is required'),
-    check('nationalId').notEmpty().withMessage('National ID is required'),
+    check('nationalId').notEmpty().withMessage('National ID is required').isLength({min:16,max:16}).withMessage("A National id has 16 digits"),
     check('telephone')
         .notEmpty().withMessage('Telephone is required')
-        .isMobilePhone().withMessage('Invalid telephone number'),
+        .isMobilePhone().withMessage('Invalid telephone number').isLength({max:10,min:10}).withMessage("enter phone number without +250"),
     check('email')
         .notEmpty().withMessage('Email is required')
         .isEmail().withMessage('Invalid email address'),

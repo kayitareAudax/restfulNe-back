@@ -20,6 +20,13 @@ const { v4: uuidv4 } = require('uuid');
     if(!errors.isEmpty()){
         return res.json({success:false,message:errors.array()[0].msg});
     }
+    const exist = await client.query(
+      `SELECT * FROM employee_laptops WHERE national_id = $1 OR telephone = $2 OR email = $3`,
+      [nationalId, telephone, email]
+    );
+    if(exist.rows.length>0){
+      return res.json({success:false,message:"employee already registered"})
+    }
     // Insert the employee laptop into the database
     const newEmployeeLaptop = await client.query(
       `INSERT INTO employee_laptops (id, first_name, last_name, national_id, telephone, email, department, position, laptop)
@@ -37,7 +44,7 @@ const { v4: uuidv4 } = require('uuid');
       ]
     );
 
-    res.status(201).json({ message: 'Employee laptop added successfully', employee: newEmployeeLaptop.rows[0] });
+    res.status(201).json({success:true, message: 'Employee laptop added successfully', employee: newEmployeeLaptop.rows[0] });
   } catch (error) {
     console.error('Error while adding employee laptop:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -56,7 +63,7 @@ exports.getEmployees = async (req, res) => {
 
     // Retrieve employees from the database with pagination
     const employees = await client.query(
-      'SELECT * FROM employee_laptops e inner join laptops lp on e.laptop=lp.id  OFFSET $1 LIMIT $2',
+      'SELECT * FROM employee_laptops e inner join laptops lp on e.laptop=lp.id ORDER BY e.id OFFSET $1 LIMIT $2',
       [offset, pageSize]
     );
 
@@ -76,19 +83,6 @@ exports.getEmployees = async (req, res) => {
     });
   } catch (error) {
     console.error('Error while retrieving employees:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-exports.deleteEmployeeLaptopById = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    // Delete the employee laptop from the database
-    await db.query('DELETE FROM employee_laptops WHERE id = $1', [id]);
-
-    res.status(200).json({ message: 'Employee laptop deleted successfully' });
-  } catch (error) {
-    console.error('Error while deleting employee laptop:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

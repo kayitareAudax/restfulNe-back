@@ -21,20 +21,38 @@ exports.createLaptop = async (req, res) => {
       [laptopId,manufacturer, model, serialNumber]
     );
 
-    res.status(201).json({ message: 'Laptop created successfully', laptop: newLaptop.rows[0] });
+    res.status(201).json({ success:true,message: 'Laptop created successfully', laptop: newLaptop.rows[0] });
   } catch (error) {
     console.error('Error while creating laptop:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 exports.getLaptops=async(req,res,next)=>{
+    const { page, limit } = req.query;
+
+  // Set default values for page and limit if not provided
+  const pageNumber = parseInt(page) || 1;
+  const pageSize = parseInt(limit) || 10;
+  const offset = (pageNumber - 1) * pageSize;
+
     try {
         // Retrieve all laptops from the database
-        const laptops = await client.query('SELECT * FROM laptops');
+        const laptops = await client.query('SELECT * FROM laptops OFFSET $1 LIMIT $2',[offset, pageSize]);
+        const totalCount = await client.query('SELECT COUNT(*) FROM laptops')
+        const totalLaptops = parseInt(totalCount.rows[0].count);
     
-        res.status(200).json({ laptops: laptops.rows });
+        const totalPages = Math.ceil(totalLaptops / pageSize);
+    
+        res.status(200).json({
+            success:true,
+            laptops: laptops.rows,
+            page: pageNumber,
+            limit: pageSize,
+            totalLaptops,
+            totalPages
+          });
       } catch (error) {
         console.error('Error while retrieving laptops:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({success:false, message: 'Internal server error' });
       }
 }
