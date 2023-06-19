@@ -86,3 +86,15 @@ exports.getEmployees = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+exports.deleteEmployeeLaptopById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Delete the employee laptop from the database
+    await client.query('DELETE FROM employee_laptops WHERE id = $1', [id]);
+    res.status(200).json({ success:true,message: 'Employee laptop deleted successfully' });
+  } catch (error) {
+    console.error('Error while deleting employee laptop:', error);
+    res.status(500).json({ success:false,message: 'Internal server error' });
+  }
+};

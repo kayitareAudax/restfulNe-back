@@ -1,4 +1,4 @@
-const { addEmployeeLaptop, getEmployees } = require("../controllers/employee.controllers");
+const { addEmployeeLaptop, getEmployees, deleteEmployeeLaptopById } = require("../controllers/employee.controllers");
 const { protect } = require("../middleware/auth.middleware");
 const {check,validationResult}=require("express-validator");
 const router = require("express").Router();
@@ -18,4 +18,5 @@ router.route("/").post(
     check("laptop","enter a laptop").notEmpty().isUUID(),
     addEmployeeLaptop);
 router.route("/").get(getEmployees)
+router.route("/:id").delete(deleteEmployeeLaptopById)
 module.exports = router;
